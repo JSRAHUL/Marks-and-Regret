@@ -1,0 +1,828 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Marks & Regret — Student Grade Evaluation System</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg: #070B14;
+    --bg-2: #0B1120;
+    --card: #101827;
+    --card-2: #141F33;
+    --blue: #4F8CFF;
+    --cyan: #36D9FF;
+    --text: #F5F7FB;
+    --text-2: #AAB4C3;
+    --border: rgba(255,255,255,0.08);
+    --green: #3DDC97;
+    --amber: #FFB84D;
+    --red: #FF5C7A;
+    --radius: 16px;
+  }
+
+  *{ margin:0; padding:0; box-sizing:border-box; }
+
+  html{ scroll-behavior: smooth; }
+
+  body{
+    background: var(--bg);
+    background-image:
+      radial-gradient(circle at 15% 0%, rgba(79,140,255,0.12), transparent 40%),
+      radial-gradient(circle at 90% 20%, rgba(54,217,255,0.08), transparent 35%);
+    color: var(--text);
+    font-family: 'Space Grotesk', sans-serif;
+    line-height: 1.6;
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  .mono{ font-family: 'JetBrains Mono', monospace; }
+
+  a{ color: inherit; }
+
+  /* ---------- Nav ---------- */
+  nav{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    padding: 22px 6vw;
+    position: sticky;
+    top:0;
+    z-index: 50;
+    backdrop-filter: blur(14px);
+    background: rgba(7,11,20,0.72);
+    border-bottom: 1px solid var(--border);
+  }
+  .brand{
+    font-family:'JetBrains Mono', monospace;
+    font-weight:700;
+    font-size:1.05rem;
+    letter-spacing:0.5px;
+  }
+  .brand span{ color: var(--cyan); }
+  .nav-link{
+    font-size:0.9rem;
+    color: var(--text-2);
+    text-decoration:none;
+    padding: 9px 18px;
+    border: 1px solid var(--border);
+    border-radius: 999px;
+    transition: all 0.25s ease;
+  }
+  .nav-link:hover{
+    color: var(--text);
+    border-color: var(--blue);
+    box-shadow: 0 0 20px rgba(79,140,255,0.25);
+  }
+
+  /* ---------- Hero ---------- */
+  .hero{
+    max-width: 980px;
+    margin: 0 auto;
+    padding: 12vh 6vw 10vh;
+    text-align:center;
+    opacity:0;
+    animation: rise 0.9s ease forwards;
+  }
+  .eyebrow{
+    display:inline-flex;
+    align-items:center;
+    gap:8px;
+    font-family:'JetBrains Mono', monospace;
+    font-size:0.78rem;
+    color: var(--cyan);
+    border: 1px solid rgba(54,217,255,0.3);
+    background: rgba(54,217,255,0.06);
+    padding: 6px 14px;
+    border-radius: 999px;
+    margin-bottom: 28px;
+  }
+  .eyebrow::before{
+    content:"";
+    width:7px; height:7px;
+    border-radius:50%;
+    background: var(--cyan);
+    box-shadow: 0 0 10px var(--cyan);
+    animation: blink 1.6s infinite;
+  }
+  @keyframes blink{ 0%,100%{opacity:1;} 50%{opacity:0.25;} }
+
+  h1.title{
+    font-size: clamp(2.6rem, 7vw, 5rem);
+    font-weight:700;
+    letter-spacing: -0.02em;
+    line-height: 1.05;
+    background: linear-gradient(120deg, #F5F7FB 40%, var(--cyan) 90%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+    margin-bottom: 18px;
+  }
+  .subtitle{
+    font-size: clamp(1rem, 2.4vw, 1.35rem);
+    color: var(--text-2);
+    font-weight: 500;
+    margin-bottom: 14px;
+  }
+  .supporting{
+    font-family:'JetBrains Mono', monospace;
+    font-size: 0.95rem;
+    color: var(--blue);
+    margin-bottom: 40px;
+  }
+  .cta-btn{
+    background: linear-gradient(120deg, var(--blue), var(--cyan));
+    color: #061018;
+    font-weight: 700;
+    font-size: 1rem;
+    border: none;
+    padding: 16px 34px;
+    border-radius: 12px;
+    cursor: pointer;
+    box-shadow: 0 10px 30px rgba(79,140,255,0.3);
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+  }
+  .cta-btn:hover{
+    transform: translateY(-3px);
+    box-shadow: 0 14px 36px rgba(54,217,255,0.4);
+  }
+
+  @keyframes rise{
+    from{ opacity:0; transform: translateY(24px); }
+    to{ opacity:1; transform: translateY(0); }
+  }
+
+  /* ---------- Section shell ---------- */
+  section{
+    max-width: 1080px;
+    margin: 0 auto;
+    padding: 8vh 6vw;
+  }
+  .section-label{
+    font-family:'JetBrains Mono', monospace;
+    font-size:0.78rem;
+    color: var(--cyan);
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+    margin-bottom: 10px;
+  }
+  .section-title{
+    font-size: clamp(1.6rem, 3.5vw, 2.2rem);
+    font-weight: 700;
+    margin-bottom: 40px;
+  }
+
+  /* ---------- Evaluation Card ---------- */
+  .eval-wrap{
+    display:flex;
+    justify-content:center;
+  }
+  .eval-card{
+    width:100%;
+    max-width: 560px;
+    background: linear-gradient(180deg, var(--card), var(--card-2));
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 40px;
+    box-shadow: 0 30px 60px rgba(0,0,0,0.35);
+    opacity: 0;
+    transform: translateY(30px);
+    transition: opacity 0.7s ease, transform 0.7s ease;
+  }
+  .eval-card.in-view{
+    opacity:1;
+    transform: translateY(0);
+  }
+  .eval-card .term-bar{
+    display:flex;
+    gap:7px;
+    margin-bottom: 28px;
+  }
+  .term-dot{ width:11px; height:11px; border-radius:50%; }
+  .term-dot.r{ background:#FF5F57; }
+  .term-dot.y{ background:#FEBC2E; }
+  .term-dot.g{ background:#28C840; }
+
+  .field{ margin-bottom: 22px; }
+  .field label{
+    display:block;
+    font-family:'JetBrains Mono', monospace;
+    font-size:0.8rem;
+    color: var(--text-2);
+    margin-bottom: 9px;
+  }
+  .field input{
+    width:100%;
+    background: rgba(255,255,255,0.03);
+    border: 1px solid var(--border);
+    color: var(--text);
+    font-family:'Space Grotesk', sans-serif;
+    font-size: 1rem;
+    padding: 14px 16px;
+    border-radius: 10px;
+    outline:none;
+    transition: border-color 0.2s ease, box-shadow 0.2s ease;
+  }
+  .field input::placeholder{ color: rgba(170,180,195,0.55); }
+  .field input:focus{
+    border-color: var(--blue);
+    box-shadow: 0 0 0 3px rgba(79,140,255,0.18);
+  }
+  .field input.invalid{
+    border-color: var(--red);
+    box-shadow: 0 0 0 3px rgba(255,92,122,0.15);
+  }
+  .error-msg{
+    font-family:'JetBrains Mono', monospace;
+    font-size: 0.78rem;
+    color: var(--red);
+    margin-top: 7px;
+    min-height: 14px;
+  }
+
+  .submit-btn{
+    width:100%;
+    background: linear-gradient(120deg, var(--blue), var(--cyan));
+    color:#061018;
+    font-weight:700;
+    font-size:1rem;
+    border:none;
+    padding: 15px;
+    border-radius: 10px;
+    cursor:pointer;
+    margin-top: 8px;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+  }
+  .submit-btn:hover{
+    transform: translateY(-2px);
+    box-shadow: 0 10px 26px rgba(79,140,255,0.3);
+  }
+  .submit-btn:active{ transform: translateY(0); }
+
+  .reset-btn{
+    width:100%;
+    background: transparent;
+    color: var(--text-2);
+    font-weight:600;
+    font-size:0.9rem;
+    border: 1px solid var(--border);
+    padding: 12px;
+    border-radius: 10px;
+    cursor:pointer;
+    margin-top: 12px;
+    transition: all 0.2s ease;
+  }
+  .reset-btn:hover{
+    color: var(--text);
+    border-color: var(--text-2);
+  }
+
+  /* ---------- Result dashboard ---------- */
+  #resultSection{ display:none; }
+  #resultSection.show{ display:block; }
+
+  .result-card{
+    background: linear-gradient(180deg, var(--card), var(--card-2));
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 0;
+    overflow:hidden;
+    box-shadow: 0 30px 70px rgba(0,0,0,0.4);
+    opacity:0;
+    transform: scale(0.96);
+    animation: popIn 0.6s ease forwards;
+  }
+  @keyframes popIn{
+    from{ opacity:0; transform: scale(0.96); }
+    to{ opacity:1; transform: scale(1); }
+  }
+
+  .result-top{
+    padding: 34px 40px;
+    display:flex;
+    flex-wrap:wrap;
+    justify-content:space-between;
+    align-items:center;
+    gap: 20px;
+    border-bottom: 1px solid var(--border);
+    transition: background 0.5s ease;
+  }
+  .result-id .r-name{
+    font-size: 1.5rem;
+    font-weight:700;
+  }
+  .result-id .r-marks{
+    font-family:'JetBrains Mono', monospace;
+    color: var(--text-2);
+    font-size: 0.95rem;
+    margin-top: 4px;
+  }
+  .grade-badge{
+    font-family:'JetBrains Mono', monospace;
+    font-size: 3.2rem;
+    font-weight:700;
+    line-height:1;
+    padding: 6px 26px;
+    border-radius: 14px;
+    border: 1px solid transparent;
+  }
+
+  .result-grid{
+    display:grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1px;
+    background: var(--border);
+  }
+  .result-cell{
+    background: var(--card);
+    padding: 24px 28px;
+  }
+  .result-cell .rc-label{
+    font-family:'JetBrains Mono', monospace;
+    font-size: 0.72rem;
+    color: var(--text-2);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    margin-bottom: 8px;
+  }
+  .result-cell .rc-value{
+    font-size: 1.2rem;
+    font-weight: 700;
+  }
+
+  .result-bottom{
+    padding: 30px 40px 36px;
+  }
+  .reality-block, .target-block{
+    margin-bottom: 22px;
+  }
+  .rb-label{
+    font-family:'JetBrains Mono', monospace;
+    font-size: 0.72rem;
+    color: var(--cyan);
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+    margin-bottom: 10px;
+  }
+  .rb-text{
+    font-size: 1.05rem;
+    color: var(--text);
+    font-weight:500;
+  }
+  .target-block .rb-text{
+    font-family:'JetBrains Mono', monospace;
+    font-size: 0.98rem;
+    color: var(--text-2);
+  }
+
+  /* Status glow variants */
+  .status-Aplus .result-top{ background: linear-gradient(120deg, rgba(255,215,0,0.10), rgba(54,217,255,0.06)); }
+  .status-Aplus .grade-badge{ color:#FFD700; border-color: rgba(255,215,0,0.4); background: rgba(255,215,0,0.08); box-shadow: 0 0 30px rgba(255,215,0,0.25); }
+
+  .status-A .result-top{ background: linear-gradient(120deg, rgba(79,140,255,0.10), rgba(54,217,255,0.06)); }
+  .status-A .grade-badge{ color: var(--cyan); border-color: rgba(54,217,255,0.4); background: rgba(54,217,255,0.08); box-shadow: 0 0 26px rgba(54,217,255,0.2); }
+
+  .status-B .result-top{ background: linear-gradient(120deg, rgba(61,220,151,0.08), transparent); }
+  .status-B .grade-badge{ color: var(--green); border-color: rgba(61,220,151,0.4); background: rgba(61,220,151,0.08); }
+
+  .status-C .result-top{ background: linear-gradient(120deg, rgba(255,184,77,0.10), transparent); }
+  .status-C .grade-badge{ color: var(--amber); border-color: rgba(255,184,77,0.4); background: rgba(255,184,77,0.08); }
+
+  .status-D .result-top{ background: linear-gradient(120deg, rgba(255,140,66,0.12), transparent); }
+  .status-D .grade-badge{ color: #FF8C42; border-color: rgba(255,140,66,0.45); background: rgba(255,140,66,0.1); }
+
+  .status-F .result-top{ background: linear-gradient(120deg, rgba(255,92,122,0.14), transparent); }
+  .status-F .grade-badge{ color: var(--red); border-color: rgba(255,92,122,0.45); background: rgba(255,92,122,0.1); animation: emergency 1.4s infinite; }
+  @keyframes emergency{
+    0%,100%{ box-shadow: 0 0 20px rgba(255,92,122,0.25); }
+    50%{ box-shadow: 0 0 34px rgba(255,92,122,0.5); }
+  }
+
+  .pass-pill, .fail-pill{
+    display:inline-block;
+    font-family:'JetBrains Mono', monospace;
+    font-size: 0.95rem;
+    font-weight:700;
+    padding: 2px 10px;
+    border-radius: 6px;
+  }
+  .pass-pill{ color: var(--green); background: rgba(61,220,151,0.1); }
+  .fail-pill{ color: var(--red); background: rgba(255,92,122,0.1); }
+
+  /* ---------- How it works ---------- */
+  .steps{
+    display:grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 24px;
+  }
+  .step-card{
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 30px 26px;
+    position: relative;
+    transition: transform 0.25s ease, border-color 0.25s ease;
+  }
+  .step-card:hover{
+    transform: translateY(-4px);
+    border-color: rgba(79,140,255,0.35);
+  }
+  .step-num{
+    font-family:'JetBrains Mono', monospace;
+    font-size: 0.85rem;
+    color: var(--cyan);
+    margin-bottom: 14px;
+  }
+  .step-title{
+    font-size: 1.1rem;
+    font-weight: 700;
+    margin-bottom: 8px;
+  }
+  .step-desc{ color: var(--text-2); font-size: 0.92rem; }
+
+  /* ---------- About / Future ---------- */
+  .about-card{
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 34px 38px;
+    color: var(--text-2);
+    font-size: 1rem;
+    line-height: 1.75;
+  }
+
+  .future-grid{
+    display:grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 14px;
+  }
+  .future-item{
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 16px 20px;
+    font-family:'JetBrains Mono', monospace;
+    font-size: 0.88rem;
+    color: var(--text-2);
+    display:flex;
+    align-items:center;
+    gap: 12px;
+  }
+  .future-item::before{
+    content:"→";
+    color: var(--cyan);
+  }
+
+  /* ---------- Footer ---------- */
+  footer{
+    border-top: 1px solid var(--border);
+    padding: 46px 6vw 40px;
+    text-align:center;
+    color: var(--text-2);
+    font-size: 0.88rem;
+  }
+  footer .f-brand{
+    font-family:'JetBrains Mono', monospace;
+    font-weight:700;
+    color: var(--text);
+    font-size: 1.05rem;
+    margin-bottom: 6px;
+  }
+  footer .f-sub{ margin-bottom: 18px; }
+  footer .f-meta{
+    font-family:'JetBrains Mono', monospace;
+    font-size: 0.78rem;
+    color: rgba(170,180,195,0.6);
+  }
+
+  /* ---------- Responsive ---------- */
+  @media (max-width: 780px){
+    .result-grid{ grid-template-columns: repeat(2, 1fr); }
+    .steps{ grid-template-columns: 1fr; }
+    .future-grid{ grid-template-columns: 1fr; }
+    .eval-card{ padding: 28px 22px; }
+    .about-card{ padding: 26px; }
+  }
+  @media (max-width: 480px){
+    .result-grid{ grid-template-columns: 1fr; }
+    .result-top{ padding: 26px; }
+    .result-bottom{ padding: 24px 26px 30px; }
+    .grade-badge{ font-size: 2.4rem; padding: 4px 18px; }
+    nav{ padding: 18px 5vw; }
+  }
+
+  @media (prefers-reduced-motion: reduce){
+    *{ animation: none !important; transition: none !important; }
+  }
+</style>
+</head>
+<body>
+
+<nav>
+  <div class="brand">marks<span>&</span>regret</div>
+  <a href="#evaluate" class="nav-link">Evaluate</a>
+</nav>
+
+<header class="hero">
+  <div class="eyebrow">grade_evaluator.py — running</div>
+  <h1 class="title">MARKS &amp; REGRET</h1>
+  <p class="subtitle">Student Grade Evaluation &amp; Personalized Feedback System</p>
+  <p class="supporting mono">&gt; Enter your marks. Get your grade. Face the reality.</p>
+  <button class="cta-btn" onclick="document.getElementById('evaluate').scrollIntoView({behavior:'smooth'})">Evaluate My Performance</button>
+</header>
+
+<section id="evaluate">
+  <div class="section-label">// step 01</div>
+  <h2 class="section-title">Evaluation Console</h2>
+
+  <div class="eval-wrap">
+    <div class="eval-card" id="evalCard">
+      <div class="term-bar">
+        <span class="term-dot r"></span>
+        <span class="term-dot y"></span>
+        <span class="term-dot g"></span>
+      </div>
+
+      <div class="field">
+        <label for="studentName">Student Name</label>
+        <input type="text" id="studentName" placeholder="Enter your name" autocomplete="off">
+        <div class="error-msg" id="nameError"></div>
+      </div>
+
+      <div class="field">
+        <label for="studentMarks">Marks</label>
+        <input type="text" id="studentMarks" placeholder="Enter marks from 0 to 100" inputmode="decimal" autocomplete="off">
+        <div class="error-msg" id="marksError"></div>
+      </div>
+
+      <button class="submit-btn" id="calcBtn">Calculate My Result</button>
+      <button class="reset-btn" id="resetBtn">Reset</button>
+    </div>
+  </div>
+</section>
+
+<section id="resultSection">
+  <div class="section-label">// step 02</div>
+  <h2 class="section-title">Result Dashboard</h2>
+
+  <div class="result-card" id="resultCard">
+    <div class="result-top">
+      <div class="result-id">
+        <div class="r-name" id="outName">Student</div>
+        <div class="r-marks mono" id="outMarks">MARKS: 0%</div>
+      </div>
+      <div class="grade-badge" id="outGrade">A+</div>
+    </div>
+
+    <div class="result-grid">
+      <div class="result-cell">
+        <div class="rc-label">Grade Point</div>
+        <div class="rc-value" id="outGP">10/10</div>
+      </div>
+      <div class="result-cell">
+        <div class="rc-label">Result</div>
+        <div class="rc-value" id="outResult"><span class="pass-pill">PASS</span></div>
+      </div>
+      <div class="result-cell">
+        <div class="rc-label">Performance Status</div>
+        <div class="rc-value" id="outStatus">TOPPER MODE</div>
+      </div>
+    </div>
+
+    <div class="result-bottom">
+      <div class="reality-block">
+        <div class="rb-label">Reality Check</div>
+        <div class="rb-text" id="outFeedback">—</div>
+      </div>
+      <div class="target-block">
+        <div class="rb-label">Next Target</div>
+        <div class="rb-text" id="outTarget">—</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="how">
+  <div class="section-label">// how it works</div>
+  <h2 class="section-title">Three steps. No shortcuts.</h2>
+  <div class="steps">
+    <div class="step-card">
+      <div class="step-num mono">01</div>
+      <div class="step-title">Enter Marks</div>
+      <div class="step-desc">Type your name and your score out of 100. Decimals are fine — 87.5 works just as well as 87.</div>
+    </div>
+    <div class="step-card">
+      <div class="step-num mono">02</div>
+      <div class="step-title">Analyze Performance</div>
+      <div class="step-desc">The system runs your score through the grading logic and calculates your grade point instantly.</div>
+    </div>
+    <div class="step-card">
+      <div class="step-num mono">03</div>
+      <div class="step-title">Get Personalized Feedback</div>
+      <div class="step-desc">Receive a reality check written for your exact grade, plus the marks you need for the next one.</div>
+    </div>
+  </div>
+</section>
+
+<section id="about">
+  <div class="section-label">// about the project</div>
+  <h2 class="section-title">About the Project</h2>
+  <div class="about-card">
+    Marks &amp; Regret is a Python based student grade evaluation system designed to calculate academic performance and provide personalized feedback. The project demonstrates conditional statements, functions, input validation, formatted output, and basic program structure in Python.
+  </div>
+</section>
+
+<section id="future">
+  <div class="section-label">// future scope</div>
+  <h2 class="section-title">Where this could go next</h2>
+  <div class="future-grid">
+    <div class="future-item">Multiple subject evaluation</div>
+    <div class="future-item">GPA and CGPA calculation</div>
+    <div class="future-item">Student performance history</div>
+    <div class="future-item">Database integration</div>
+    <div class="future-item">Graphical performance reports</div>
+    <div class="future-item">AI based personalized recommendations</div>
+    <div class="future-item">Teacher and student accounts</div>
+    <div class="future-item">Web based academic dashboard</div>
+  </div>
+</section>
+
+<footer>
+  <div class="f-brand">Marks &amp; Regret</div>
+  <div class="f-sub">Student Grade Evaluation &amp; Personalized Feedback System</div>
+  <div class="f-meta">Python Programming Mini Project · B.Tech Computer Science &amp; Engineering</div>
+</footer>
+
+<script>
+(function(){
+  const GRADES = [
+    { min: 90, max: 100.001, grade: "A+", gp: 10, status: "TOPPER MODE",
+      feedback: "Bro is cooking! Keep the topper energy alive.", key: "Aplus" },
+    { min: 80, max: 90, grade: "A", gp: 9, status: "ALMOST TOPPER",
+      feedback: "So close to 90. A little more grinding next time.", key: "A" },
+    { min: 70, max: 80, grade: "B", gp: 8, status: "NOT BAD",
+      feedback: "Decent score. Time to stop procrastinating.", key: "B" },
+    { min: 60, max: 70, grade: "C", gp: 7, status: "YOU CAN DO BETTER",
+      feedback: "You passed, but your books are asking for attention.", key: "C" },
+    { min: 50, max: 60, grade: "D", gp: 6, status: "BARELY SURVIVING",
+      feedback: "Congratulations! You escaped the danger zone.", key: "D" },
+    { min: 0, max: 50, grade: "F", gp: 0, status: "ACADEMIC EMERGENCY",
+      feedback: "It's not over. Wake up, study harder and comeback.", key: "F" }
+  ];
+
+  const nameInput = document.getElementById('studentName');
+  const marksInput = document.getElementById('studentMarks');
+  const nameError = document.getElementById('nameError');
+  const marksError = document.getElementById('marksError');
+  const calcBtn = document.getElementById('calcBtn');
+  const resetBtn = document.getElementById('resetBtn');
+  const resultSection = document.getElementById('resultSection');
+  const resultCard = document.getElementById('resultCard');
+
+  function getGradeInfo(marks){
+    for (const g of GRADES){
+      if (marks >= g.min && marks < g.max) return g;
+    }
+    return GRADES[GRADES.length - 1];
+  }
+
+  function nextTarget(marks, gradeKey){
+    if (marks >= 90) return "MAXIMUM GRADE ACHIEVED!";
+    const thresholds = [
+      { upTo: 60, target: 60, name: "C", floor: 0 },
+      { upTo: 70, target: 70, name: "B", floor: 60 },
+      { upTo: 80, target: 80, name: "A", floor: 70 },
+      { upTo: 90, target: 90, name: "A+", floor: 80 }
+    ];
+    // below 50 -> reach 50 to pass
+    if (marks < 50){
+      const need = (50 - marks).toFixed(2);
+      return need + " more marks needed to pass (reach 50)";
+    }
+    for (const t of thresholds){
+      if (marks >= t.floor && marks < t.upTo){
+        const need = (t.target - marks).toFixed(2);
+        return need + " more marks needed for " + t.name;
+      }
+    }
+    return "MAXIMUM GRADE ACHIEVED!";
+  }
+
+  function validate(){
+    let ok = true;
+    nameError.textContent = "";
+    marksError.textContent = "";
+    nameInput.classList.remove('invalid');
+    marksInput.classList.remove('invalid');
+
+    const name = nameInput.value.trim();
+    if (!name){
+      nameError.textContent = "Name can't be empty.";
+      nameInput.classList.add('invalid');
+      ok = false;
+    }
+
+    const raw = marksInput.value.trim();
+    if (!raw){
+      marksError.textContent = "Enter your marks.";
+      marksInput.classList.add('invalid');
+      ok = false;
+    } else if (!/^\d+(\.\d+)?$/.test(raw)){
+      marksError.textContent = "Numbers only — no letters or symbols.";
+      marksInput.classList.add('invalid');
+      ok = false;
+    } else {
+      const val = parseFloat(raw);
+      if (val < 0 || val > 100){
+        marksError.textContent = "Marks must be between 0 and 100.";
+        marksInput.classList.add('invalid');
+        ok = false;
+      }
+    }
+    return ok;
+  }
+
+  function animateNumber(el, from, to, suffix, decimals){
+    const duration = 700;
+    const start = performance.now();
+    function frame(now){
+      const progress = Math.min((now - start) / duration, 1);
+      const eased = 1 - Math.pow(1 - progress, 3);
+      const value = from + (to - from) * eased;
+      el.textContent = value.toFixed(decimals) + suffix;
+      if (progress < 1) requestAnimationFrame(frame);
+      else el.textContent = to.toFixed(decimals) + suffix;
+    }
+    requestAnimationFrame(frame);
+  }
+
+  function calculate(){
+    if (!validate()) return;
+
+    const name = nameInput.value.trim();
+    const marks = parseFloat(marksInput.value.trim());
+    const info = getGradeInfo(marks);
+    const isPass = info.grade !== "F";
+    const target = nextTarget(marks, info.key);
+
+    document.getElementById('outName').textContent = name;
+    document.getElementById('outMarks').textContent = "MARKS: " + marks.toFixed(2) + "%";
+    document.getElementById('outGrade').textContent = info.grade;
+    document.getElementById('outGP').textContent = info.gp + "/10";
+    document.getElementById('outResult').innerHTML = isPass
+      ? '<span class="pass-pill">PASS</span>'
+      : '<span class="fail-pill">FAIL</span>';
+    document.getElementById('outStatus').textContent = info.status;
+    document.getElementById('outFeedback').textContent = info.feedback;
+    document.getElementById('outTarget').textContent = target;
+
+    resultCard.className = 'result-card status-' + info.key;
+    // restart pop animation
+    resultCard.style.animation = 'none';
+    void resultCard.offsetWidth;
+    resultCard.style.animation = null;
+
+    resultSection.classList.add('show');
+    resultSection.scrollIntoView({ behavior: 'smooth' });
+
+    animateNumber(document.getElementById('outGP'), 0, info.gp, "/10", 0);
+  }
+
+  function resetForm(){
+    nameInput.value = "";
+    marksInput.value = "";
+    nameError.textContent = "";
+    marksError.textContent = "";
+    nameInput.classList.remove('invalid');
+    marksInput.classList.remove('invalid');
+    resultSection.classList.remove('show');
+    nameInput.focus();
+  }
+
+  calcBtn.addEventListener('click', calculate);
+  resetBtn.addEventListener('click', resetForm);
+  marksInput.addEventListener('keydown', function(e){
+    if (e.key === 'Enter') calculate();
+  });
+  nameInput.addEventListener('keydown', function(e){
+    if (e.key === 'Enter') marksInput.focus();
+  });
+
+  // Reveal evaluation card on load / scroll into view
+  const evalCard = document.getElementById('evalCard');
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting){
+        evalCard.classList.add('in-view');
+      }
+    });
+  }, { threshold: 0.2 });
+  observer.observe(evalCard);
+})();
+</script>
+
+</body>
+</html>
